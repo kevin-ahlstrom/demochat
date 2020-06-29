@@ -1,33 +1,19 @@
-FROM alpine:3.5
+FROM node:latest
 
-# install node
-RUN apk add --no-cache nodejs tini
+RUN mkdir -p /src
 
-# set working directory
-WORKDIR /root/demochat
+WORKDIR /src
 
-# copy project file
-COPY package.json .
+COPY package.json /src/
 
-# set NODE_ENV 
-ENV NODE_ENV production
+RUN npm install
+RUN npm install -g mocha
+RUN npm install -g istanbul
+RUN npm install -g gulp
+RUN npm install -g debug
 
-# install node packages
-RUN apk add --no-cache --virtual .build-dep python make g++ krb5-dev && \
-    npm set progress=false && \
-    npm config set depth 0 && \
-    npm install && \
-    npm cache clean && \
-    apk del .build-dep && \
-    rm -rf /tmp/*
+COPY . /src
 
-# copy app files
-COPY . .
+#ENV DEBUG=*
 
-# Set tini as entrypoint
-ENTRYPOINT ["/sbin/tini", "--"]
-
-#application server
-EXPOSE 5000
-
-CMD npm run start
+CMD ["npm", "start"]
